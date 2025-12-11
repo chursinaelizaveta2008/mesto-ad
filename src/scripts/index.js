@@ -9,8 +9,17 @@
 import { initialCards } from "./cards.js";
 import { createCardElement, deleteCard, likeCard } from "./components/card.js";
 import { openModalWindow, closeModalWindow, setCloseModalWindowEventListeners } from "./components/modal.js";
+import { enableValidation, clearValidation } from "./components/validation.js";
 
-// DOM узлы
+const validationSettings = {
+  formSelector: ".popup__form",
+  inputSelector: ".popup__input",
+  submitButtonSelector: ".popup__button",
+  inactiveButtonClass: "popup__button_disabled",
+  inputErrorClass: "popup__input_type_error",
+  errorClass: "popup__error_visible"
+};
+
 const placesWrap = document.querySelector(".places__list");
 const profileFormModalWindow = document.querySelector(".popup_type_edit");
 const profileForm = profileFormModalWindow.querySelector(".popup__form");
@@ -35,7 +44,7 @@ const profileAvatar = document.querySelector(".profile__image");
 
 const avatarFormModalWindow = document.querySelector(".popup_type_edit-avatar");
 const avatarForm = avatarFormModalWindow.querySelector(".popup__form");
-const avatarInput = avatarForm.querySelector(".popup__input");
+const avatarInput = avatarForm.querySelector(".popup__input_type_avatar");
 
 const handlePreviewPicture = ({ name, link }) => {
   imageElement.src = link;
@@ -49,12 +58,14 @@ const handleProfileFormSubmit = (evt) => {
   profileTitle.textContent = profileTitleInput.value;
   profileDescription.textContent = profileDescriptionInput.value;
   closeModalWindow(profileFormModalWindow);
+  profileForm.reset();
 };
 
 const handleAvatarFromSubmit = (evt) => {
   evt.preventDefault();
   profileAvatar.style.backgroundImage = `url(${avatarInput.value})`;
   closeModalWindow(avatarFormModalWindow);
+  avatarForm.reset();
 };
 
 const handleCardFormSubmit = (evt) => {
@@ -74,30 +85,32 @@ const handleCardFormSubmit = (evt) => {
   );
 
   closeModalWindow(cardFormModalWindow);
+  cardForm.reset();
 };
-
-// EventListeners
-profileForm.addEventListener("submit", handleProfileFormSubmit);
-cardForm.addEventListener("submit", handleCardFormSubmit);
-avatarForm.addEventListener("submit", handleAvatarFromSubmit);
 
 openProfileFormButton.addEventListener("click", () => {
   profileTitleInput.value = profileTitle.textContent;
   profileDescriptionInput.value = profileDescription.textContent;
   openModalWindow(profileFormModalWindow);
+  clearValidation(profileForm, validationSettings);
 });
 
 profileAvatar.addEventListener("click", () => {
   avatarForm.reset();
   openModalWindow(avatarFormModalWindow);
+  clearValidation(avatarForm, validationSettings);
 });
 
 openCardFormButton.addEventListener("click", () => {
   cardForm.reset();
   openModalWindow(cardFormModalWindow);
+  clearValidation(cardForm, validationSettings);
 });
 
-// отображение карточек
+profileForm.addEventListener("submit", handleProfileFormSubmit);
+cardForm.addEventListener("submit", handleCardFormSubmit);
+avatarForm.addEventListener("submit", handleAvatarFromSubmit);
+
 initialCards.forEach((data) => {
   placesWrap.append(
     createCardElement(data, {
@@ -108,7 +121,8 @@ initialCards.forEach((data) => {
   );
 });
 
-//настраиваем обработчики закрытия попапов
+enableValidation(validationSettings);
+
 const allPopups = document.querySelectorAll(".popup");
 allPopups.forEach((popup) => {
   setCloseModalWindowEventListeners(popup);
